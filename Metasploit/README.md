@@ -1,8 +1,12 @@
 # Metasploit-Framework Docker Image
-
 This Docker image will be updated about once a month.  
 
-Usage:
+## Supported Tags
+
+- [`latest`, (Dockerfile)](https://github.com/peakkk/dockerhub/blob/master/Metasploit/Dockerfile)
+- [`with-db`, (msf-postgres/Dockerfile)](https://github.com/peakkk/dockerhub/blob/master/Metasploit/msf-postgres/Dockerfile)
+
+## Usage
 ```bash
 docker run -it -P peakkk/metasploit
 ```
