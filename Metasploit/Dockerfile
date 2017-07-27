@@ -35,11 +35,12 @@ RUN set -ex \
         xsel \
         zlib1g \
         zlib1g-dev \
-
+    && rm -rf /var/lib/apt/lists/* \
     && mkdir "$MSF_DIR"
 
 WORKDIR $MSF_DIR
-VOLUME /root/
+VOLUME /root/.msf4
+VOLUME /root/.msf5
 ENV PATH $PATH:$MSF_DIR
 
 RUN set -ex \
