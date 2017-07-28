@@ -43,7 +43,7 @@ RUN set -ex \
 ENV GOSU_VERSION 1.7
 RUN set -ex \
     && groupadd -r postgres --gid=999 && useradd -r -g postgres --uid=999 postgres \
-    && apt-get -qq update && apt-get install -y --no-install-recommends ca-certificates wget && rm -rf /var/lib/apt/lists/* \
+    && apt-get install -y --no-install-recommends ca-certificates wget locales \
     && wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture)" \
     && wget -O /usr/local/bin/gosu.asc "https://github.com/tianon/gosu/releases/download/$GOSU_VERSION/gosu-$(dpkg --print-architecture).asc" \
     && export GNUPGHOME="$(mktemp -d)" \
@@ -53,7 +53,6 @@ RUN set -ex \
     && chmod +x /usr/local/bin/gosu \
     && gosu nobody true \
     && apt-get purge -y --auto-remove wget \
-    && apt-get install -y locales \
     && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8 \
     && key='B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8' \
     && export GNUPGHOME="$(mktemp -d)" \
@@ -64,10 +63,8 @@ RUN set -ex \
 # make the "en_US.UTF-8" locale so postgres will be utf-8 enabled by default
 ENV LANG en_US.utf8
 
-ENV PG_MAJOR 9.6
-ENV PG_VERSION 9.6.3-1.pgdg80+1
-ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH
-ENV PGDATA /var/lib/postgresql/data
+ENV PG_MAJOR=9.6 PG_VERSION=9.6.3-1.pgdg80+1 PGDATA=/var/lib/postgresql/data
+ENV PATH /usr/lib/postgresql/$PG_MAJOR/bin:$PATH:$MSF_DIR
 
 RUN set -ex \
     && echo 'deb http://apt.postgresql.org/pub/repos/apt/ jessie-pgdg main' $PG_MAJOR > /etc/apt/sources.list.d/pgdg.list \
@@ -84,14 +81,11 @@ RUN set -ex \
     && mkdir -p /var/run/postgresql && chown -R postgres:postgres /var/run/postgresql && chmod 2777 /var/run/postgresql \
     && mkdir -p "$PGDATA" && chown -R postgres:postgres "$PGDATA" && chmod 777 "$PGDATA" # this 777 will be replaced by 700 at runtime (allows semi-arbitrary "--user" values)
 
-VOLUME /var/lib/postgresql/data
 ## End of postgres installing
 
+VOLUME ["/var/lib/postgresql/data", "/root/.msf4", "/root/.msf5"]
 
 WORKDIR $MSF_DIR
-VOLUME /root/.msf4
-VOLUME /root/.msf5
-ENV PATH $PATH:$MSF_DIR
 
 RUN set -ex \
     && git clone --depth=1 https://github.com/rapid7/metasploit-framework.git $MSF_DIR \
